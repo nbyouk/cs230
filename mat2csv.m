@@ -1,5 +1,5 @@
 function mat2csv(mat_name)
-data = load(append(mat_name, '.mat')).CaseData;
+data = load(append('mat_samples_hours_to_run/', mat_name, '.mat')).CaseData;
 ecg = timetable2table(data.ECG, "ConvertRowTimes", false);
 afib = strcmp(data.anntype, '(AFIB');
 normal = strcmp(data.anntype, '(N'); % add all other anntypes to exclude here
