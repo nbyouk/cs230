@@ -1,2 +1,2 @@
 #!/bin/bash
-fusermount -u aws_bucket
+umount aws_bucket
