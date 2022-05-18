@@ -2,6 +2,8 @@ import json
 import logging
 import os
 import shutil
+import numpy as np
+from scipy import signal
 
 import torch
 
@@ -142,3 +144,11 @@ def load_checkpoint(checkpoint, model, optimizer=None):
         optimizer.load_state_dict(checkpoint['optim_dict'])
 
     return checkpoint
+
+def spectrogram(data, fs=500, nperseg=64, noverlap=32):
+    f, t, Sxx = signal.spectrogram(data, fs=fs, nperseg=nperseg, noverlap=noverlap)
+    Sxx = np.transpose(Sxx, [0, 2, 1])
+    Sxx = np.abs(Sxx)
+    mask = Sxx > 0
+    Sxx[mask] = np.log(Sxx[mask])
+    return f, t, Sxx

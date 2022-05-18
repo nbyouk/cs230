@@ -7,7 +7,7 @@ import os
 import numpy as np
 import torch
 import torch.optim as optim
-from tqdm import trange
+from tqdm import tqdm
 
 import utils
 import model.net as net
@@ -46,37 +46,41 @@ def train(model, optimizer, loss_fn, train_loader, metrics, params):
     loss_avg = utils.RunningAverage()
 
     # Use tqdm for progress bar
-    for t, data in enumerate(train_loader):
-        # fetch the next training batch
-        train_batch = data['sx']
-        labels_batch = data['label']
+    with tqdm(train_loader, unit="batch") as t:
+        for i, data in enumerate(t):
+            # fetch the next training batch
+            train_batch = data['sx'].float()
+            labels_batch = data['label'].float()
 
-        # compute model output and loss
-        output_batch = model(train_batch)
-        loss = loss_fn(output_batch, labels_batch.unsqueeze(1))
+            # compute model output and loss
+            output_batch = model(train_batch)
+            loss = loss_fn(output_batch, labels_batch.unsqueeze(1))
 
-        # clear previous gradients, compute gradients of all variables wrt loss
-        optimizer.zero_grad()
-        loss.backward()
+            # clear previous gradients, compute gradients of all variables wrt loss
+            optimizer.zero_grad()
+            loss.backward()
 
-        # performs updates using calculated gradients
-        optimizer.step()
+            # performs updates using calculated gradients
+            optimizer.step()
 
-        # Evaluate summaries only once in a while
-        if i % params.save_summary_steps == 0:
-            # extract data from torch Variable, move to cpu, convert to numpy arrays
-            output_batch = output_batch.data.cpu().numpy()
-            labels_batch = labels_batch.data.cpu().numpy()
+            # Evaluate summaries only once in a while
+            if i % params.save_summary_steps == 0:
+                # compute sigmoid of output batch
+                output_batch = torch.round(torch.sigmoid(output_batch))
 
-            # compute all metrics on this batch
-            summary_batch = {metric: metrics[metric](output_batch, labels_batch)
-                             for metric in metrics}
-            summary_batch['loss'] = loss.item()
-            summ.append(summary_batch)
+                # extract data from torch Variable, move to cpu, convert to numpy arrays
+                output_batch = output_batch.data.cpu().numpy()
+                labels_batch = labels_batch.data.cpu().numpy()
 
-        # update the average loss
-        loss_avg.update(loss.item())
-        t.set_postfix(loss='{:05.3f}'.format(loss_avg()))
+                # compute all metrics on this batch
+                summary_batch = {metric: metrics[metric](output_batch, labels_batch)
+                                 for metric in metrics}
+                summary_batch['loss'] = loss.item()
+                summ.append(summary_batch)
+
+            # update the average loss
+            loss_avg.update(loss.item())
+            t.set_postfix(loss='{:05.3f}'.format(loss_avg()))
 
     # compute mean of all metrics in summary
     metrics_mean = {metric: np.mean([x[metric]
@@ -92,7 +96,7 @@ def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics,
     Args:
         model: (torch.nn.Module) the neural network
         train_data: (dict) training data with keys 'data' and 'labels'
-        val_data: (dict) validaion data with keys 'data' and 'labels'
+        val_data: (dict) validation data with keys 'data' and 'labels'
         optimizer: (torch.optim) optimizer for parameters of model
         loss_fn: a function that takes batch_output and batch_labels and computes the loss for the batch
         metrics: (dict) a dictionary of functions that compute a metric using the output and labels of each batch
@@ -113,7 +117,6 @@ def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics,
         # Run one epoch
         logging.info("Epoch {}/{}".format(epoch + 1, params.num_epochs))
 
-        # compute number of batches in one epoch (one full pass over the training set)
         train(model, optimizer, loss_fn, train_loader, metrics, params)
 
         # Evaluate for one epoch on validation set

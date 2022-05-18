@@ -9,9 +9,11 @@ import torch
 import utils
 import model.net as net
 from model.data_loader import PhysioNetDataset 
+from torch.utils.data import DataLoader
+
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/small', help="Directory containing the dataset")
+parser.add_argument('--data_dir', default='test', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
 parser.add_argument('--restore_file', default='best', help="name of the file in --model_dir \
                      containing weights to load")
@@ -37,12 +39,15 @@ def evaluate(model, loss_fn, data_loader, metrics, params):
     # compute metrics over the dataset
     for (_, data) in enumerate(data_loader):
         # fetch the next evaluation batch
-        data_batch = data['sx']
-        labels_batch = data['label']
+        data_batch = data['sx'].float()
+        labels_batch = data['label'].float()
         
         # compute model output
         output_batch = model(data_batch)
         loss = loss_fn(output_batch, labels_batch.unsqueeze(1))
+        
+        # compute sigmoid of output batch
+        output_batch = torch.round(torch.sigmoid(output_batch))
 
         # extract data from torch Variable, move to cpu, convert to numpy arrays
         output_batch = output_batch.data.cpu().numpy()
@@ -85,20 +90,18 @@ if __name__ == '__main__':
     logging.info("Creating the dataset...")
 
     # load data
-    data_loader = DataLoader(args.data_dir, params)
-    data = data_loader.load_data(['test'], args.data_dir)
-    test_data = data['test']
+    test_set = PhysioNetDataset(args.data_dir)
+    test_data = DataLoader(test_set, batch_size=params.batch_size)
 
     # specify the test set size
-    params.test_size = test_data['size']
-    test_data_iterator = data_loader.data_iterator(test_data, params)
+    params.test_size = len(test_set)
 
     logging.info("- done.")
 
     # Define the model
     model = net.Net(params).cuda() if params.cuda else net.Net(params)
     
-    loss_fn = net.loss_fn
+    loss_fn = torch.nn.BCEWithLogitsLoss() 
     metrics = net.metrics
     
     logging.info("Starting evaluation")
@@ -107,6 +110,6 @@ if __name__ == '__main__':
     utils.load_checkpoint(os.path.join(args.model_dir, args.restore_file + '.pth.tar'), model)
 
     # Evaluate
-    test_metrics = evaluate(model, loss_fn, data_loader, metrics, params)
+    test_metrics = evaluate(model, loss_fn, test_data, metrics, params)
     save_path = os.path.join(args.model_dir, "metrics_test_{}.json".format(args.restore_file))
     utils.save_dict_to_json(test_metrics, save_path)

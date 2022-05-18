@@ -37,10 +37,11 @@ class PhysioNetDataset(Dataset):
         csv_val = (pd.read_csv(csv_name, header=None)).values
 
         # transform
-        sx = utils.spectrogram(np.expand_dims(dsv_val[:, 0], axis=0))[2]
+        sx = utils.spectrogram(np.expand_dims(csv_val[:, 0], axis=0))[2]
 
         # normalize spectrogram
         sx_norm = (sx - np.mean(sx)) / np.std(sx)
+        
         sample = {'sx': sx_norm, 'label': self.labels.iloc[idx, 0]}
 
         return sample

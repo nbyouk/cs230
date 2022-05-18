@@ -21,125 +21,69 @@ class Net(nn.Module):
 
     def __init__(self, params):
         """
-        We define an recurrent network that predicts the NER tags for each token in the sentence. The components
-        required are:
-
-        - an embedding layer: this layer maps each index in range(params.vocab_size) to a params.embedding_dim vector
-        - lstm: applying the LSTM on the sequential input returns an output for each token in the sentence
-        - fc: a fully connected layer that converts the LSTM output for each token to a distribution over NER tags
+        TODO: define layers here
 
         Args:
-            params: (Params) contains vocab_size, embedding_dim, lstm_hidden_dim
+            params: (Params) contains layer dimensions 
         """
         super(Net, self).__init__()
 
-        # the embedding takes as input the vocab_size and the embedding_dim
-        self.embedding = nn.Embedding(params.vocab_size, params.embedding_dim)
+        # layer
+        self.conv1 = nn.Conv2d(params.in_channels, params.hidden_channels1, 3, padding=1)
+        self.conv2 = nn.Conv2d(params.hidden_channels1, params.hidden_channels2, 3, padding=1)
 
-        # the LSTM takes as input the size of its input (embedding_dim), its hidden size
-        # for more details on how to use it, check out the documentation
-        self.lstm = nn.LSTM(params.embedding_dim,
-                            params.lstm_hidden_dim, batch_first=True)
+        # max pool layer
+        self.maxpool = nn.MaxPool2d((3,1))
+
+        # batch norm layer
+        self.batchnorm = nn.BatchNorm2d(params.hidden_channels2)
 
         # the fully connected layer transforms the output to give the final output layer
-        self.fc = nn.Linear(params.lstm_hidden_dim, params.number_of_tags)
+        self.fc = nn.Linear((params.in_dim_1//9)*(params.in_dim_2)*params.hidden_channels2, 1)
 
     def forward(self, s):
         """
         This function defines how we use the components of our network to operate on an input batch.
 
         Args:
-            s: (Variable) contains a batch of sentences, of dimension batch_size x seq_len, where seq_len is
-               the length of the longest sentence in the batch. For sentences shorter than seq_len, the remaining
-               tokens are PADding tokens. Each row is a sentence with each element corresponding to the index of
-               the token in the vocab.
+            s: (Variable) contains a batch of input spectrograms, batch_size x 1 x 936 x 33
 
         Returns:
-            out: (Variable) dimension batch_size*seq_len x num_tags with the log probabilities of tokens for each token
-                 of each sentence.
-
-        Note: the dimensions after each step are provided
+            out: (Variable) dimension batch_size
         """
-        #                                -> batch_size x seq_len
-        # apply the embedding layer that maps each token to its embedding
-        # dim: batch_size x seq_len x embedding_dim
-        s = self.embedding(s)
-
-        # run the LSTM along the sentences of length seq_len
-        # dim: batch_size x seq_len x lstm_hidden_dim
-        s, _ = self.lstm(s)
-
-        # make the Variable contiguous in memory (a PyTorch artefact)
+        s = self.conv1(s)
+        s = self.maxpool(s)
+        s = self.conv2(s)
+        s = self.maxpool(s)
+        s = self.batchnorm(s)
+        s = F.relu(s)
         s = s.contiguous()
 
-        # reshape the Variable so that each row contains one token
-        # dim: batch_size*seq_len x lstm_hidden_dim
-        s = s.view(-1, s.shape[2])
+        # reshape the Variable before passing to hidden layer
+        s = s.view(s.shape[0], -1)
 
-        # apply the fully connected layer and obtain the output (before softmax) for each token
-        s = self.fc(s)                   # dim: batch_size*seq_len x num_tags
+        # apply the fully connected layer and obtain the output
+        s = self.fc(s)
 
-        # apply log softmax on each token's output (this is recommended over applying softmax
-        # since it is numerically more stable)
-        return F.log_softmax(s, dim=1)   # dim: batch_size*seq_len x num_tags
-
-
-def loss_fn(outputs, labels):
-    """
-    Compute the cross entropy loss given outputs from the model and labels for all tokens. Exclude loss terms
-    for PADding tokens.
-
-    Args:
-        outputs: (Variable) dimension batch_size*seq_len x num_tags - log softmax output of the model
-        labels: (Variable) dimension batch_size x seq_len where each element is either a label in [0, 1, ... num_tag-1],
-                or -1 in case it is a PADding token.
-
-    Returns:
-        loss: (Variable) cross entropy loss for all tokens in the batch
-
-    Note: you may use a standard loss function from http://pytorch.org/docs/master/nn.html#loss-functions. This example
-          demonstrates how you can easily define a custom loss function.
-    """
-
-    # reshape labels to give a flat vector of length batch_size*seq_len
-    labels = labels.view(-1)
-
-    # since PADding tokens have label -1, we can generate a mask to exclude the loss from those terms
-    mask = (labels >= 0).float()
-
-    # indexing with negative values is not supported. Since PADded tokens have label -1, we convert them to a positive
-    # number. This does not affect training, since we ignore the PADded tokens with the mask.
-    labels = labels % outputs.shape[1]
-
-    num_tokens = int(torch.sum(mask))
-
-    # compute cross entropy loss for all tokens (except PADding tokens), by multiplying with mask.
-    return -torch.sum(outputs[range(outputs.shape[0]), labels]*mask)/num_tokens
-
+        return s 
 
 def accuracy(outputs, labels):
     """
-    Compute the accuracy, given the outputs and labels for all tokens. Exclude PADding terms.
+    Compute the accuracy, given the outputs and labels.
 
     Args:
-        outputs: (np.ndarray) dimension batch_size*seq_len x num_tags - log softmax output of the model
-        labels: (np.ndarray) dimension batch_size x seq_len where each element is either a label in
-                [0, 1, ... num_tag-1], or -1 in case it is a PADding token.
+        outputs: (np.ndarray) output of the model
+        labels: (np.ndarray) binary true labels: AFIB present = 1, not present = 0
 
     Returns: (float) accuracy in [0,1]
     """
 
-    # reshape labels to give a flat vector of length batch_size*seq_len
+    # unroll labels and outputs
     labels = labels.ravel()
-
-    # since PADding tokens have label -1, we can generate a mask to exclude the loss from those terms
-    mask = (labels >= 0)
-
-    # np.argmax gives us the class predicted for each token by the model
-    outputs = np.argmax(outputs, axis=1)
+    outputs = outputs.ravel()
 
     # compare outputs with labels and divide by number of tokens (excluding PADding tokens)
-    return np.sum(outputs == labels)/float(np.sum(mask))
+    return float(np.sum(outputs == labels))/len(labels)
 
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
