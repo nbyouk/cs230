@@ -1,2 +1,5 @@
 aws_bucket/*
 data_tools.asv
+.DS_Store
+cnn/.DS_Store
+cnn/experiments/.DS_Store
