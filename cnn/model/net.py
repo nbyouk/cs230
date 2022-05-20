@@ -29,17 +29,21 @@ class Net(nn.Module):
         super(Net, self).__init__()
 
         # layer
-        self.conv1 = nn.Conv2d(params.in_channels, params.hidden_channels1, 3, padding=1)
+        self.conv1 = nn.Conv2d(params.in_channels, params.hidden_channels1, 5, padding=2)
         self.conv2 = nn.Conv2d(params.hidden_channels1, params.hidden_channels2, 3, padding=1)
+        self.conv3 = nn.Conv2d(params.hidden_channels2, params.hidden_channels3, 3, padding=1)
 
         # max pool layer
-        self.maxpool = nn.MaxPool2d((3,1))
+        self.maxpool1 = nn.MaxPool2d((3,1))
+        self.maxpool2 = nn.MaxPool2d((8,3))
 
         # batch norm layer
-        self.batchnorm = nn.BatchNorm2d(params.hidden_channels2)
+        self.batchnorm1 = nn.BatchNorm2d(params.hidden_channels1)
+        self.batchnorm2 = nn.BatchNorm2d(params.hidden_channels2)
+        self.batchnorm3 = nn.BatchNorm2d(params.hidden_channels3)
 
         # the fully connected layer transforms the output to give the final output layer
-        self.fc = nn.Linear((params.in_dim_1//9)*(params.in_dim_2)*params.hidden_channels2, 1)
+        self.fc = nn.Linear(13*11*params.hidden_channels3, 1)
 
     def forward(self, s):
         """
@@ -51,11 +55,17 @@ class Net(nn.Module):
         Returns:
             out: (Variable) dimension batch_size
         """
-        s = self.conv1(s)
-        s = self.maxpool(s)
-        s = self.conv2(s)
-        s = self.maxpool(s)
-        s = self.batchnorm(s)
+        s = self.conv1(s) # batch_size x hidden_channels1 x 936 x 33
+        s = self.maxpool1(s) # batch_size x hidden_channels1 x 312 x 33
+        s = self.batchnorm1(s) 
+        s = self.conv2(s) # batch_size x hidden_channels2 x 312 x 33
+        s = self.maxpool1(s) # batch_size x hidden_channels2 x 104 x 33
+        s = self.batchnorm2(s)
+        s = self.conv3(s) # batch_size x hidden_channels3 x 104 x 33
+        s = self.maxpool2(s) # batch_size x hidden_channels3 x 13 x 11
+        s = self.batchnorm3(s)
+
+
         s = F.relu(s)
         s = s.contiguous()
 
