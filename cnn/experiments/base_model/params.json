@@ -11,5 +11,7 @@
     "hidden_channels2": 5,
     "hidden_channels3": 5,
 
+    "dropout_prob": 0.5,
+
     "save_summary_steps": 10
 }
