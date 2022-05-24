@@ -92,7 +92,9 @@ def accuracy(outputs, labels):
 
     Returns: (float) accuracy in [0,1]
     """
-    return confusion_matrix(outputs, labels)[0, 0] / len(labels)
+    CM = confusion_matrix(outputs, labels)
+
+    return float(CM[0, 0] + CM[1, 1]) / len(labels)
 
 def precision(outputs, labels):
     """
