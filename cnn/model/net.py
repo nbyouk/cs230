@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import sklearn.metrics as m
 
 
 class Net(nn.Module):
@@ -34,8 +35,7 @@ class Net(nn.Module):
         self.conv3 = nn.Conv2d(params.hidden_channels2, params.hidden_channels3, 3, padding=1)
 
         # max pool layer
-        self.maxpool1 = nn.MaxPool2d((3,1))
-        self.maxpool2 = nn.MaxPool2d((8,3))
+        self.maxpool = nn.MaxPool2d((3,1))
 
         # batch norm layer
         self.batchnorm1 = nn.BatchNorm2d(params.hidden_channels1)
@@ -43,7 +43,7 @@ class Net(nn.Module):
         self.batchnorm3 = nn.BatchNorm2d(params.hidden_channels3)
 
         # the fully connected layer transforms the output to give the final output layer
-        self.fc = nn.Linear(13*11*params.hidden_channels3, 1)
+        self.fc = nn.Linear(34*33*params.hidden_channels3, 1)
 
     def forward(self, s):
         """
@@ -56,13 +56,13 @@ class Net(nn.Module):
             out: (Variable) dimension batch_size
         """
         s = self.conv1(s) # batch_size x hidden_channels1 x 936 x 33
-        s = self.maxpool1(s) # batch_size x hidden_channels1 x 312 x 33
+        s = self.maxpool(s) # batch_size x hidden_channels1 x 312 x 33
         s = self.batchnorm1(s) 
         s = self.conv2(s) # batch_size x hidden_channels2 x 312 x 33
-        s = self.maxpool1(s) # batch_size x hidden_channels2 x 104 x 33
+        s = self.maxpool(s) # batch_size x hidden_channels2 x 104 x 33
         s = self.batchnorm2(s)
         s = self.conv3(s) # batch_size x hidden_channels3 x 104 x 33
-        s = self.maxpool2(s) # batch_size x hidden_channels3 x 13 x 11
+        s = self.maxpool(s) # batch_size x hidden_channels3 x 34 x 33 
         s = self.batchnorm3(s)
 
 
@@ -77,6 +77,11 @@ class Net(nn.Module):
 
         return s 
 
+def confusion_matrix(outputs, labels):
+    labels = labels.ravel()
+    outputs = outputs.ravel()
+    return m.confusion_matrix(labels, outputs, labels=[1., 0.])
+
 def accuracy(outputs, labels):
     """
     Compute the accuracy, given the outputs and labels.
@@ -87,17 +92,62 @@ def accuracy(outputs, labels):
 
     Returns: (float) accuracy in [0,1]
     """
+    return confusion_matrix(outputs, labels)[0, 0] / len(labels)
 
-    # unroll labels and outputs
-    labels = labels.ravel()
-    outputs = outputs.ravel()
+def precision(outputs, labels):
+    """
+    Compute the accuracy, given the outputs and labels.
 
-    # compare outputs with labels and divide by number of tokens (excluding PADding tokens)
-    return float(np.sum(outputs == labels))/len(labels)
+    Args:
+        outputs: (np.ndarray) output of the model
+        labels: (np.ndarray) binary true labels: AFIB present = 1, not present = 0
+
+    Returns: (float) precision in [0,1]
+    """
+
+    # compute confusion matrix
+    CM = confusion_matrix(outputs, labels)
+
+    return float(CM[0, 0]) / (CM[0, 0] + CM[1, 0] + 1e-10)
+
+def recall(outputs, labels):
+    """
+    Compute the accuracy, given the outputs and labels.
+
+    Args:
+        outputs: (np.ndarray) output of the model
+        labels: (np.ndarray) binary true labels: AFIB present = 1, not present = 0
+
+    Returns: (float) accuracy in [0,1]
+    """
+
+    # compute confusion matrix
+    CM = confusion_matrix(outputs, labels)
+
+    return float(CM[0, 0]) / (CM[0, 0] + CM[0, 1] + 1e-10)
+
+def f1(outputs, labels):
+    """
+    Compute the accuracy, given the outputs and labels.
+
+    Args:
+        outputs: (np.ndarray) output of the model
+        labels: (np.ndarray) binary true labels: AFIB present = 1, not present = 0
+
+    Returns: (float) accuracy in [0,1]
+    """
+
+    # compute precision and recall 
+    p = precision(outputs, labels)
+    r = recall(outputs, labels)
+    return 2*p*r/(p + r + 1e-10)
 
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
 metrics = {
     'accuracy': accuracy,
+    'precision': precision,
+    'recall': recall,
+    'f1': f1
     # could add more metrics such as accuracy for each token type
 }
