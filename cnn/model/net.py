@@ -32,20 +32,16 @@ class Net(nn.Module):
         # convolution layers
         self.conv1 = nn.Conv2d(params.in_channels, params.hidden_channels1, 5, padding=2)
         self.conv2 = nn.Conv2d(params.hidden_channels1, params.hidden_channels2, 3, padding=1)
-        self.conv3 = nn.Conv2d(params.hidden_channels2, params.hidden_channels3, 3, padding=1)
+        self.conv3 = nn.Conv2d(params.hidden_channels2, params.hidden_channels3, 3, padding=(0,1)) 
+        self.conv4 = nn.Conv2d(params.hidden_channels3, params.hidden_channels4, 3, padding=1) 
+        self.conv5 = nn.Conv2d(params.hidden_channels4, params.hidden_channels5, 3, padding=1) 
 
         # max pool layer
-        self.maxpool = nn.MaxPool2d((3,1))
-
-        # batch norm layers
-        self.batchnorm1 = nn.BatchNorm2d(params.hidden_channels1)
-        self.batchnorm2 = nn.BatchNorm2d(params.hidden_channels2)
-        self.batchnorm3 = nn.BatchNorm2d(params.hidden_channels3)
-        # dropout layer
-        self.dropout = nn.Dropout(params.dropout_prob)
+        self.maxpool = nn.MaxPool2d((2,1))
 
         # the fully connected layer transforms the output to give the final output layer
-        self.fc = nn.Linear(34*33*params.hidden_channels3, 1)
+        self.fc1 = nn.Linear(29*33*params.hidden_channels5, 1000)
+        self.fc2 = nn.Linear(1000, 1)
 
     def forward(self, s):
         """
@@ -57,18 +53,16 @@ class Net(nn.Module):
         Returns:
             out: (Variable) dimension batch_size
         """
-        s = self.conv1(s) # batch_size x hidden_channels1 x 936 x 33
-        s = self.maxpool(s) # batch_size x hidden_channels1 x 312 x 33
-        s = self.batchnorm1(s) 
-        s = self.dropout(s)
-        s = self.conv2(s) # batch_size x hidden_channels2 x 312 x 33
-        s = self.maxpool(s) # batch_size x hidden_channels2 x 104 x 33
-        s = self.batchnorm2(s)
-        s = self.dropout(s)
-        s = self.conv3(s) # batch_size x hidden_channels3 x 104 x 33
-        s = self.maxpool(s) # batch_size x hidden_channels3 x 34 x 33 
-        s = self.batchnorm3(s)
-        s = self.dropout(s)
+        s = self.conv1(s)   # batch_size x hidden_channels1 x 936 x 33
+        s = self.maxpool(s) # batch_size x hidden_channels1 x 468 x 33
+        s = self.conv2(s)   # batch_size x hidden_channels2 x 468 x 33
+        s = self.maxpool(s) # batch_size x hidden_channels2 x 234 x 33
+        s = self.conv3(s)   # batch_size x hidden_channels3 x 232 x 33
+        s = self.maxpool(s) # batch_size x hidden_channels3 x 116 x 33
+        s = self.conv4(s)   # batch_size x hidden_channels4 x 116 x 33
+        s = self.maxpool(s) # batch_size x hidden_channels4 x 58  x 33
+        s = self.conv5(s)   # batch_size x hidden_channels5 x 58  x 33
+        s = self.maxpool(s) # batch_size x hidden_channels5 x 29  x 33
 
         s = F.relu(s)
         s = s.contiguous()
@@ -76,8 +70,10 @@ class Net(nn.Module):
         # reshape the Variable before passing to hidden layer
         s = s.view(s.shape[0], -1)
 
-        # apply the fully connected layer and obtain the output
-        s = self.fc(s)
+        # apply the fully connected layers and obtain the output
+        s = self.fc1(s)
+        s = F.relu(s)
+        s = self.fc2(s)
 
         return s 
 
