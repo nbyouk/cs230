@@ -7,11 +7,11 @@
     "in_dim_2": 33,
     "in_channels": 1,
 
-    "hidden_channels1": 5,
-    "hidden_channels2": 5,
-    "hidden_channels3": 5,
-
-    "dropout_prob": 0.5,
+    "hidden_channels1": 8,
+    "hidden_channels2": 16,
+    "hidden_channels3": 16,
+    "hidden_channels4": 32,
+    "hidden_channels5": 32,
 
     "save_summary_steps": 10
 }
