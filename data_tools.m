@@ -8,6 +8,7 @@ assignments = [randperm(63, 63)]';
 labels_full = zeros(53*60, 1);
 sample_nums = [randperm(53*60, 53*60)]';
 for i = 1:53
+    i
     [ecg, labels] = load_patient(assignments(i));
     mult = 30000;
     for k = 1:60
@@ -22,6 +23,7 @@ writematrix(labels_full, 'aws_bucket/train/labels.csv')
 labels_full = zeros(5*60, 1);
 sample_nums = [randperm(5*60, 5*60)]';
 for i = 1:5
+    i
     [ecg, labels] = load_patient(assignments(i+53));
     mult = 30000;
     for k = 1:60
@@ -36,6 +38,7 @@ writematrix(labels_full, 'aws_bucket/dev/labels.csv')
 labels_full = zeros(5*60, 1);
 sample_nums = [randperm(5*60, 5*60)]';
 for i = 1:5
+    i
     [ecg, labels] = load_patient(assignments(i+58));
     mult = 30000;
     for k = 1:60
