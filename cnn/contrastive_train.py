@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 import utils
 import model.net as net
-from model.data_loader import PhysioNetDataset 
+from model.contrastive_data_loader import PhysioNetDataset
 from evaluate import evaluate
 from torch.utils.data import DataLoader
 
@@ -49,14 +49,16 @@ def train(model, optimizer, loss_fn, train_loader, metrics, params):
     with tqdm(train_loader, unit="batch") as t:
         for i, data in enumerate(t):
             # fetch the next training batch
-            print(i)
-            print(data)
             train_batch = data['sx'].float()
+            train_batch_ch2 = data['sx2'].float()
             labels_batch = data['label'].float()
 
             # compute model output and loss
-            output_batch = model(train_batch)
-            loss = loss_fn(output_batch, labels_batch.unsqueeze(1))
+            output_batch = model(train_batch) #TODO: Figure out how to handle two chanels here
+            output_batch2 = model(train_batch_ch2)
+            loss = utils.obtain_contrastive_loss(output_batch, output_batch2)
+            print("Contrastive loss is:", loss)
+            # loss = loss_fn(output_batch, labels_batch.unsqueeze(1))
 
             # clear previous gradients, compute gradients of all variables wrt loss
             optimizer.zero_grad()
@@ -68,7 +70,7 @@ def train(model, optimizer, loss_fn, train_loader, metrics, params):
             # Evaluate summaries only once in a while
             if i % params.save_summary_steps == 0:
                 # compute sigmoid of output batch
-                output_batch = torch.round(torch.sigmoid(output_batch))
+                output_batch = torch.round(torch.sigmoid(output_batch)) #TODO: Figure out how to handle 2 channels here
 
                 # extract data from torch Variable, move to cpu, convert to numpy arrays
                 output_batch = output_batch.data.cpu().numpy()
@@ -174,8 +176,8 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # load data
-    train_set = PhysioNetDataset(args.data_dir)
-    val_set = PhysioNetDataset('dev')
+    train_set = PhysioNetDataset(args.data_dir) #refers to contrastive data loader
+    val_set = PhysioNetDataset('dev') #refers to contrastive data loader
     train_loader = DataLoader(train_set, batch_size=params.batch_size)
     val_loader = DataLoader(val_set, batch_size=params.batch_size)
 
@@ -190,11 +192,7 @@ if __name__ == '__main__':
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # fetch loss function and metrics
-<<<<<<< HEAD
     loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([2.0]))
-=======
-    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([3.0]))
->>>>>>> b5ff2a00098b4a2fb245cfd440fe8830511bc790
     metrics = net.metrics
 
     # Train the model

@@ -4,3 +4,5 @@ data_tools.asv
 cnn/.DS_Store
 cnn/experiments/.DS_Store
 *.pyc
+*.tar
+*.log

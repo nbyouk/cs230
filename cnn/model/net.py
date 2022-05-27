@@ -75,9 +75,18 @@ class Net(nn.Module):
         s = F.relu(s)
         s = self.fc2(s)
 
-        return s 
+        return s
 
 def confusion_matrix(outputs, labels):
+    """
+    Compute the true positives, false positives, false negatives, and true negatives.
+
+    Args:
+        outputs: (np.ndarray) output of the model
+        labels: (np.ndarray) binary true labels: AFIB present = 1, not present = 0
+
+    Returns: matrix
+    """
     labels = labels.ravel()
     outputs = outputs.ravel()
     return m.confusion_matrix(labels, outputs, labels=[1., 0.])
