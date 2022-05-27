@@ -49,8 +49,6 @@ def train(model, optimizer, loss_fn, train_loader, metrics, params):
     with tqdm(train_loader, unit="batch") as t:
         for i, data in enumerate(t):
             # fetch the next training batch
-            print(i)
-            print(data)
             train_batch = data['sx'].float()
             labels_batch = data['label'].float()
 
@@ -190,11 +188,7 @@ if __name__ == '__main__':
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # fetch loss function and metrics
-<<<<<<< HEAD
     loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([2.0]))
-=======
-    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([3.0]))
->>>>>>> b5ff2a00098b4a2fb245cfd440fe8830511bc790
     metrics = net.metrics
 
     # Train the model
