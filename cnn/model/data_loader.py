@@ -10,11 +10,17 @@ from torch.utils.data import DataLoader
 
 import utils 
 
+def zero_pad(data, length):
+    extended = np.zeros(length)
+    siglength = np.min([length, data.shape[0]])
+    extended[:siglength] = data[:siglength]
+    return extended
 
 class PhysioNetDataset(Dataset):
     """
     Handles all aspects of the data.
     """
+
     def __init__(self, data_type):
         """
         Args:
@@ -43,8 +49,9 @@ class PhysioNetDataset(Dataset):
         csv_name = os.path.join(self.data_dir, sample_name)
         csv_val = (pd.read_csv(csv_name, header=None)).values
 
-        # transform
-        sx = utils.spectrogram(np.expand_dims(csv_val[:, channel], axis=0))[2]
+        # extend and transform
+        csv_val = zero_pad(csv_val[:,channel], length = 30000)
+        sx = utils.spectrogram(np.expand_dims(csv_val, axis=0))[2]
 
         # normalize spectrogram
         sx_norm = (sx - np.mean(sx)) / np.std(sx)

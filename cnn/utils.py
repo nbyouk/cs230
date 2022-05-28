@@ -6,7 +6,7 @@ from re import I
 import shutil
 import torch
 import numpy as np
-from itertools import combinations
+# from itertools import combinations
 from scipy import signal
 
 import torch
@@ -157,58 +157,57 @@ def spectrogram(data, fs=500, nperseg=64, noverlap=32):
     Sxx[mask] = np.log(Sxx[mask])
     return f, t, Sxx
 
-def obtain_contrastive_loss(ch1, ch2):
-    """ Calculate NCE Loss For Latent Embeddings in Batch 
-    Args:
-        latent_embeddings1 (torch.Tensor): embeddings from model for different perturbations of same instance (BxHxN). Channel 1
-        latent_embeddings1 (torch.Tensor): embeddings from model for different perturbations of same instance (BxHxN). Channel 1 
-    Outputs:
-        loss (torch.Tensor): scalar NCE loss 
-    """
-    #Calculate cosine similarity
-    cos = torch.CosineSimilarity
-    torch.cosine_similarity
+# def obtain_contrastive_loss(ch1, ch2):
+#     """ Calculate NCE Loss For Latent Embeddings in Batch 
+#     Args:
+#         latent_embeddings1 (torch.Tensor): embeddings from model for different perturbations of same instance (BxHxN). Channel 1
+#         latent_embeddings1 (torch.Tensor): embeddings from model for different perturbations of same instance (BxHxN). Channel 1 
+#     Outputs:
+#         loss (torch.Tensor): scalar NCE loss 
+#     """
+#     #Calculate cosine similarity
+#     cos = nn.CosineSimilarity()
+#     cosine_similarity = cos(ch1, ch2)
 
-    #mask out 
+#     #mask out 
+#     return loss
 
-    return loss
+# def obtain_contrastive_loss2(ch1, ch2):
+#     """ Calculate NCE Loss For Latent Embeddings in Batch 
+#     Args:
+#         latent_embeddings1 (torch.Tensor): embeddings from model for different perturbations of same instance (BxHxN). Channel 1
+#         latent_embeddings1 (torch.Tensor): embeddings from model for different perturbations of same instance (BxHxN). Channel 1 
+#     Outputs:
+#         loss (torch.Tensor): scalar NCE loss 
+#     """
+#     #nviews1 = set(range(ch1.shape[2])) #Should be the same shape
+#     #view_combinations1 = combinations(nviews1,2)
+#     #nviews2 = set(range(ch2.shape[2])) #Should be the same shape
+#     #view_combinations2 = combinations(nviews2,2)
+#     loss = 0
+#     ncombinations = 1
 
-def obtain_contrastive_loss2(ch1, ch2):
-    """ Calculate NCE Loss For Latent Embeddings in Batch 
-    Args:
-        latent_embeddings1 (torch.Tensor): embeddings from model for different perturbations of same instance (BxHxN). Channel 1
-        latent_embeddings1 (torch.Tensor): embeddings from model for different perturbations of same instance (BxHxN). Channel 1 
-    Outputs:
-        loss (torch.Tensor): scalar NCE loss 
-    """
-    #nviews1 = set(range(ch1.shape[2])) #Should be the same shape
-    #view_combinations1 = combinations(nviews1,2)
-    #nviews2 = set(range(ch2.shape[2])) #Should be the same shape
-    #view_combinations2 = combinations(nviews2,2)
-    loss = 0
-    ncombinations = 1
+#     norm1_vector = ch1.norm(dim=1).unsqueeze(0)
+#     norm2_vector = ch2.norm(dim=1).unsqueeze(0)
+#     sim_matrix = torch.mm(ch1, ch2.transpose(0,1))
+#     norm_matrix = torch.mm(norm1_vector.transpose(0,1),norm2_vector)
+#     temperature = 0.1
+#     argument = sim_matrix/(norm_matrix*temperature)
+#     sim_matrix_exp = torch.exp(argument)
 
-    norm1_vector = ch1.norm(dim=1).unsqueeze(0)
-    norm2_vector = ch2.norm(dim=1).unsqueeze(0)
-    sim_matrix = torch.mm(ch1, ch2.transpose(0,1))
-    norm_matrix = torch.mm(norm1_vector.transpose(0,1),norm2_vector)
-    temperature = 0.1
-    argument = sim_matrix/(norm_matrix*temperature)
-    sim_matrix_exp = torch.exp(argument)
+#     diag_elements = torch.diag(sim_matrix_exp)
 
-    diag_elements = torch.diag(sim_matrix_exp)
+#     tri1_sum = torch.sum(sim_matrix_exp,1) # Not too sure about this
+#     tri2_sum = torch.sum(sim_matrix_exp,0)
 
-    tri1_sum = torch.sum(sim_matrix_exp,1) # Not too sure about this
-    tri2_sum = torch.sum(sim_matrix_exp,0)
+#     loss_diag1 = -torch.mean(torch.log(diag_elements/tri1_sum))
+#     loss_diag2 = -torch.mean(torch.log(diag_elements/tri2_sum))
 
-    loss_diag1 = -torch.mean(torch.log(diag_elements/tri1_sum))
-    loss_diag2 = -torch.mean(torch.log(diag_elements/tri2_sum))
+#     #loss_tri1 = -torch.mean(torch.log(sim_matrix_exp/triu_sum))
+#     #loss_tri2 = -torch.mean(torch.log(sim_matrix_exp/tril_sum))     
 
-    #loss_tri1 = -torch.mean(torch.log(sim_matrix_exp/triu_sum))
-    #loss_tri2 = -torch.mean(torch.log(sim_matrix_exp/tril_sum))     
+#     loss = loss_diag1 + loss_diag2
+#     loss_terms = 2
 
-    loss = loss_diag1 + loss_diag2
-    loss_terms = 2
-
-    loss = loss/(loss_terms*ncombinations)
-    return loss
+#     loss = loss/(loss_terms*ncombinations)
+#     return loss

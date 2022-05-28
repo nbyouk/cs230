@@ -188,7 +188,8 @@ if __name__ == '__main__':
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # fetch loss function and metrics
-    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([2.0]))
+    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([1.0]))
+    # loss_fn = torch.nn.BCEWithLogitsLoss()
     metrics = net.metrics
 
     # Train the model
