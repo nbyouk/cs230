@@ -8,15 +8,23 @@ import torch
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
+import utils 
+
+def zero_pad(data, length):
+    extended = np.zeros(length)
+    siglength = np.min([length, data.shape[0]])
+    extended[:siglength] = data[:siglength]
+    return extended
 
 class PhysioNetDataset(Dataset):
     """
     Handles all aspects of the data.
     """
+
     def __init__(self, data_type):
         """
         Args:
-            data_type: (string) 'train', 'train/small', 'dev' or 'test'
+            data_type: (string) 'data' or 'data_small'
         """
         data_dir = os.path.join('../aws_bucket', data_type)
         self.data_dir = data_dir
@@ -41,12 +49,12 @@ class PhysioNetDataset(Dataset):
         csv_name = os.path.join(self.data_dir, sample_name)
         csv_val = (pd.read_csv(csv_name, header=None)).values
 
-        # transform
-        ecg = csv_val[:, channel]
+        # extend and transform
+        ecg = zero_pad(csv_val[:,channel], length = 30000)
 
-        # normalize data
-        ecg_norm = (ecg - np.mean(ecg)) / np.std(ecg)
+        # normalize spectrogram
+        sx_norm = (ecg - np.mean(ecg)) / np.std(ecg)
         
-        sample = {'ecg': ecg_norm, 'label': self.labels.iloc[idx, 0]}
+        sample = {'sx': sx_norm, 'label': self.labels.iloc[idx, 0]}
 
         return sample

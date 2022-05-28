@@ -3,13 +3,10 @@
     "batch_size": 16,
     "num_epochs": 10,
 
-    "in_dim_1": 936,
-    "in_dim_2": 33,
-    "in_channels": 1,
-
-    "hidden_channels1": 5,
-    "hidden_channels2": 5,
-    "hidden_channels3": 5,
+    "in_dim": 30000,
+    "embedding_dim": 100,
+    "lstm_hidden_dim": 200,
+    "fc_hidden_dim": 50,
 
     "save_summary_steps": 10
 }

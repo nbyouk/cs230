@@ -13,7 +13,7 @@ import utils
 import model.net as net
 from model.data_loader import PhysioNetDataset 
 from evaluate import evaluate
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 
 
 parser = argparse.ArgumentParser()
@@ -23,7 +23,7 @@ parser.add_argument('--model_dir', default='experiments/base_model',
                     help="Directory containing params.json")
 parser.add_argument('--restore_file', default=None,
                     help="Optional, name of the file in --model_dir containing weights to reload before \
-                    training")  # 'best' or 'train'
+                    training")  # 'best' or 'last'
 
 
 def train(model, optimizer, loss_fn, train_loader, metrics, params):
@@ -172,10 +172,11 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # load data
-    train_set = PhysioNetDataset(args.data_dir)
-    val_set = PhysioNetDataset('dev')
-    train_loader = DataLoader(train_set, batch_size=params.batch_size)
-    val_loader = DataLoader(val_set, batch_size=params.batch_size)
+    dataset = PhysioNetDataset(args.data_dir)
+    train_size = int(0.7*len(dataset))
+    train_set, val_set = random_split(dataset, [train_size, len(dataset)-train_size])
+    train_loader = DataLoader(train_set, batch_size=params.batch_size, shuffle=True)
+    val_loader = DataLoader(val_set, batch_size=params.batch_size, shuffle=True)
 
     # specify the train and val dataset sizes
     params.train_size = len(train_set)
@@ -188,7 +189,8 @@ if __name__ == '__main__':
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # fetch loss function and metrics
-    loss_fn = torch.nn.BCEWithLogitsLoss()
+    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([1.0]))
+    # loss_fn = torch.nn.BCEWithLogitsLoss()
     metrics = net.metrics
 
     # Train the model
