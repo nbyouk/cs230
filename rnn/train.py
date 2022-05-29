@@ -173,7 +173,7 @@ if __name__ == '__main__':
 
     # load data
     train_set = PhysioNetDataset(args.data_dir)
-    train_set = PhysioNetDataset('test')
+    val_set = PhysioNetDataset('test')
     train_loader = DataLoader(train_set, batch_size=params.batch_size, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=params.batch_size, shuffle=True)
 
