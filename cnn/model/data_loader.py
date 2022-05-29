@@ -24,7 +24,7 @@ class PhysioNetDataset(Dataset):
     def __init__(self, data_type):
         """
         Args:
-            data_type: (string) 'data' or 'data_small'
+            data_type: (string) 'data' or 'test'
         """
         data_dir = os.path.join('../aws_bucket', data_type)
         self.data_dir = data_dir

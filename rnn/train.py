@@ -172,9 +172,8 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # load data
-    dataset = PhysioNetDataset(args.data_dir)
-    train_size = int(0.7*len(dataset))
-    train_set, val_set = random_split(dataset, [train_size, len(dataset)-train_size])
+    train_set = PhysioNetDataset(args.data_dir)
+    train_set = PhysioNetDataset('test')
     train_loader = DataLoader(train_set, batch_size=params.batch_size, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=params.batch_size, shuffle=True)
 
