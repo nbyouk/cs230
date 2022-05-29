@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
     # load data
     test_set = PhysioNetDataset(args.data_dir)
-    test_data = DataLoader(test_set, batch_size=params.batch_size)
+    test_data = DataLoader(test_set, batch_size=params.batch_size, shuffle=True)
 
     # specify the test set size
     params.test_size = len(test_set)
