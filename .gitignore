@@ -6,4 +6,6 @@ cnn/experiments/.DS_Store
 *.pyc
 *.pth.tar
 *.log
+*.sh
+*.env
 rnn/experiments/base_model/train.log
