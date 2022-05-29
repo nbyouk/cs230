@@ -39,7 +39,7 @@ def evaluate(model, loss_fn, data_loader, metrics, params):
     # compute metrics over the dataset
     for (_, data) in enumerate(data_loader):
         # fetch the next evaluation batch
-        data_batch = data['sx'].float()
+        data_batch = data['sx'].int()
         labels_batch = data['label'].float()
         
         # compute model output
