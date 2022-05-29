@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader, random_split
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='train/small',
+parser.add_argument('--data_dir', default='data',
                     help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model',
                     help="Directory containing params.json")

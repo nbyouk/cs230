@@ -52,9 +52,9 @@ class Net(nn.Module):
         Returns:
             out: (Variable) dimension batch_size
         """
-        s = self.embedding(s) # batch_size x 
-        s = self.lstm(s)
-        s = self.maxpool(s)
+        s = self.embedding(s) # batch_size x in_dim x embedding_dim 
+        s = self.lstm(s) # batch_size x in_dim x 2*lstm_hidden_dim
+        s = self.maxpool(s) #
         s = s.contiguous()
         s = self.fc1(s)
         s = F.relu(s)
