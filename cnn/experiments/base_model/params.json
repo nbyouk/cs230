@@ -1,0 +1,17 @@
+{
+    "learning_rate": 1e-3,
+    "batch_size": 32,
+    "num_epochs": 50,
+
+    "in_dim_1": 936,
+    "in_dim_2": 33,
+    "in_channels": 1,
+
+    "hidden_channels1": 8,
+    "hidden_channels2": 16,
+    "hidden_channels3": 16,
+    "hidden_channels4": 32,
+    "hidden_channels5": 32,
+
+    "save_summary_steps": 10
+}
