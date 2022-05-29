@@ -12,7 +12,7 @@ args = parser.parse_args()
 idx = int(args.sample)
 
 data_dir = 'aws_bucket/data'
-labels = pd.read_csv(os.path.join(data_dir, 'labels.csv')).values
+labels = pd.read_csv(os.path.join(data_dir, 'labels.csv'), header = None).values
 
 sample_name = 'sample' + str(idx) + '.csv'
 csv_name = os.path.join(data_dir, sample_name)
