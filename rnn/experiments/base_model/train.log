@@ -341,3 +341,7 @@
 2022-05-24 15:00:04,406:INFO: - done.
 2022-05-24 15:00:04,408:INFO: Starting training for 10 epoch(s)
 2022-05-24 15:00:04,408:INFO: Epoch 1/10
+2022-05-28 15:08:42,489:INFO: Loading the datasets...
+2022-05-28 15:08:42,794:INFO: - done.
+2022-05-28 15:08:42,874:INFO: Starting training for 10 epoch(s)
+2022-05-28 15:08:42,875:INFO: Epoch 1/10
