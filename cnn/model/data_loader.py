@@ -28,7 +28,7 @@ class PhysioNetDataset(Dataset):
         """
         data_dir = os.path.join('../aws_bucket', data_type)
         self.data_dir = data_dir
-        self.labels = pd.read_csv(os.path.join(data_dir, 'labels.csv'))
+        self.labels = pd.read_csv(os.path.join(data_dir, 'labels.csv'), header = None)
         self.length = len(self.labels)
     
     def __len__(self):
