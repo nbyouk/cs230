@@ -13,7 +13,7 @@ for i = 1:53
     mult = 30000;
     for k = 1:60
         ecg_minute = ecg((k-1)*mult+1:k*mult, :);
-        writematrix(ecg_minute, append('aws_bucket/data/sample', string(sample_nums(60*(i-1)+k)-1 + 1894), '.csv'))
+        writematrix(ecg_minute, append('aws_bucket/data/sample', string(sample_nums(60*(i-1)+k)-1 + 1893), '.csv'))
         labels_full(sample_nums(60*(i-1)+k)) = labels(k);
     end
 end
@@ -28,11 +28,11 @@ for i = 1:10
     mult = 30000;
     for k = 1:60
         ecg_minute = ecg((k-1)*mult+1:k*mult, :);
-        writematrix(ecg_minute, append('aws_bucket/test/sample', string(sample_nums(60*(i-1)+k)-1), '.csv'))
+         writematrix(ecg_minute, append('aws_bucket/test/sample', string(sample_nums(60*(i-1)+k)-1), '.csv'))
         labels_full(sample_nums(60*(i-1)+k)) = labels(k);
     end
 end
-writematrix(labels_full, 'aws_bucket/test/labels.csv')
+ writematrix(labels_full, 'aws_bucket/test/labels.csv')
 end
 
 function [ecg, labels] = load_patient(num)
