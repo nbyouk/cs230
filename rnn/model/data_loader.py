@@ -52,9 +52,10 @@ class PhysioNetDataset(Dataset):
         # extend and transform
         ecg = zero_pad(csv_val[:,channel], length = 30000)
 
-        # normalize
+        # normalize and downsample
         sx_norm = (ecg - np.mean(ecg)) / np.std(ecg)
-        #sx_norm = pd.cut(ecg, 100, labels=False) 
+        sx_norm = sx_norm[::10]
+        sx_norm = pd.cut(sx_norm, 100, labels=False) 
         
         sample = {'sx': sx_norm, 'label': self.labels.iloc[idx, 0]}
 

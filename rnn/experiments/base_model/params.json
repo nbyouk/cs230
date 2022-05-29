@@ -3,7 +3,7 @@
     "batch_size": 32,
     "num_epochs": 10,
 
-    "in_dim": 30000,
+    "in_dim": 3000,
     "num_bins": 100,
     "embedding_dim": 100,
     "lstm_hidden_dim": 200,

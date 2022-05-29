@@ -49,7 +49,7 @@ def train(model, optimizer, loss_fn, train_loader, metrics, params):
     with tqdm(train_loader, unit="batch") as t:
         for i, data in enumerate(t):
             # fetch the next training batch
-            train_batch = data['sx'].float()
+            train_batch = data['sx'].int()
             labels_batch = data['label'].float()
 
             # compute model output and loss

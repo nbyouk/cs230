@@ -28,12 +28,15 @@ class Net(nn.Module):
             params: (Params) contains layer dimensions 
         """
         super(Net, self).__init__()
+        
+        # downsampling
+        #self.downsample = nn.MaxPool1d(10)
 
         # embedding layer
         self.embedding = nn.Embedding(params.num_bins, params.embedding_dim)
 
         # lstm layer
-        self.lstm = nn.LSTM(params.in_dim, params.lstm_hidden_dim, batch_first=True, bidirectional=True)
+        self.lstm = nn.LSTM(params.embedding_dim, params.lstm_hidden_dim, batch_first=True, bidirectional=True)
 
         # maxpool layer
         self.maxpool = nn.MaxPool2d((params.in_dim, 1))
@@ -55,10 +58,11 @@ class Net(nn.Module):
         Returns:
             out: (Variable) dimension batch_size
         """
-        #s = self.embedding(s) # batch_size x in_dim x embedding_dim 
+        #s = self.downsample(s) # batch_size x in_dim
+        s = self.embedding(s) # batch_size x in_dim x embedding_dim 
         s, _ = self.lstm(s) # batch_size x in_dim x 2*lstm_hidden_dim
-        #s = self.maxpool(s) # batch_size x 2*lstm_hidden_dim
-        #s = s.view(-1, s.shape[2])
+        s = self.maxpool(s) # batch_size x 2*lstm_hidden_dim
+        s = s.view(-1, s.shape[2])
         s = s.contiguous()
         s = self.fc1(s)
         s = F.relu(s)
