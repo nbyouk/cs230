@@ -9,3 +9,4 @@ cnn/experiments/.DS_Store
 *.sh
 *.env
 rnn/experiments/base_model/train.log
+processDataSets/*
