@@ -112,6 +112,9 @@ def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics,
         utils.load_checkpoint(restore_path, model, optimizer)
 
     best_val_acc = 0.0
+    train_loss, val_loss = [], []
+    train_acc, val_accuracy = [], []
+    epochs = []
 
     for epoch in range(params.num_epochs):
         # Run one epoch
@@ -124,13 +127,17 @@ def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics,
 
         val_acc = val_metrics['accuracy']
         is_best = val_acc >= best_val_acc
+        print(val_metrics)
 
-        # Save weights
+        val_loss.append(val_metrics['loss']) 
+        val_accuracy.append(val_acc) 
+        epochs.append(epoch)
+
         utils.save_checkpoint({'epoch': epoch + 1,
-                               'state_dict': model.state_dict(),
-                               'optim_dict': optimizer.state_dict()},
-                              is_best=is_best,
-                              checkpoint=model_dir)
+            'state_dict': model.state_dict(),
+            'optim_dict': optimizer.state_dict()},
+                          is_best=is_best,
+                          checkpoint=model_dir)
 
         # If best_eval, best_save_path
         if is_best:
@@ -146,6 +153,7 @@ def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics,
         last_json_path = os.path.join(
             model_dir, "metrics_val_last_weights.json")
         utils.save_dict_to_json(val_metrics, last_json_path)
+    utils.plot_loss_acc(epochs, val_loss, val_accuracy)
 
 
 if __name__ == '__main__':

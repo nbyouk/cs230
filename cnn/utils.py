@@ -6,8 +6,9 @@ from re import I
 import shutil
 import torch
 import numpy as np
-# from itertools import combinations
 from scipy import signal
+import scipy.io as sio
+import matplotlib.pyplot as plt
 
 import torch
 
@@ -156,6 +157,24 @@ def spectrogram(data, fs=500, nperseg=64, noverlap=32):
     mask = Sxx > 0
     Sxx[mask] = np.log(Sxx[mask])
     return f, t, Sxx
+
+def plot_loss_acc(epochs, loss, acc):
+    """
+    Args:
+        list of epoch indices
+        list of losses: index corresponds with the epoch
+        list of accuracy measurements: index corresponds with the epoch
+    """
+    plt.subplot(1,2,1)
+    plt.plot(epochs, loss)
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    
+    plt.subplot(1,2,2)
+    plt.plot(epochs, acc)
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.show()
 
 # def obtain_contrastive_loss(ch1, ch2):
 #     """ Calculate NCE Loss For Latent Embeddings in Batch 
