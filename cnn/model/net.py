@@ -6,6 +6,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import sklearn.metrics as m
 
+#Global variables for the constrastive learning class
+c1 = 1 #b/c single time-series
+c2 = 4 #4
+c3 = 16 #16
+c4 = 32 #32
+k=7 #kernel size #7 
+s=3 #stride #3
 
 class Net(nn.Module):
     """
@@ -38,6 +45,9 @@ class Net(nn.Module):
 
         # max pool layer
         self.maxpool = nn.MaxPool2d((2,1))
+        
+        # dropout layer
+        self.dropout = nn.Dropout(0.5)
 
         # the fully connected layer transforms the output to give the final output layer
         self.fc1 = nn.Linear(29*33*params.hidden_channels5, 1000)
@@ -65,6 +75,7 @@ class Net(nn.Module):
         s = self.maxpool(s) # batch_size x hidden_channels5 x 29  x 33
 
         s = F.relu(s)
+        s = self.dropout(s)
         s = s.contiguous()
 
         # reshape the Variable before passing to hidden layer
@@ -73,9 +84,11 @@ class Net(nn.Module):
         # apply the fully connected layers and obtain the output
         s = self.fc1(s)
         s = F.relu(s)
+        s = self.dropout(s) #dropout
         s = self.fc2(s)
 
         return s
+
 
 def confusion_matrix(outputs, labels):
     """
