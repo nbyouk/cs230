@@ -42,10 +42,10 @@ class Net(nn.Module):
         self.maxpool = nn.MaxPool2d((params.in_dim, 1))
 
         # dropout layer
-        self.dropout = nn.Dropout(0.1)
+        self.dropout = nn.Dropout(0.5)
 
         # dense layers
-        self.fc1 = nn.Linear(2*params.lstm_hidden_dim, params.fc_hidden_dim)
+        self.fc1 = nn.Linear(2*params.lstm_hidden_dim, 1)
         self.fc2 = nn.Linear(params.fc_hidden_dim,1)
 
     def forward(self, s):
@@ -64,10 +64,8 @@ class Net(nn.Module):
         s = self.maxpool(s) # batch_size x 2*lstm_hidden_dim
         s = s.view(-1, s.shape[2])
         s = s.contiguous()
-        s = self.fc1(s)
-        s = F.relu(s)
         s = self.dropout(s)
-        s = self.fc2(s)
+        s = self.fc1(s)
 
         return s 
 

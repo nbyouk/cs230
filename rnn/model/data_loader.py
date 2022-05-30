@@ -53,9 +53,9 @@ class PhysioNetDataset(Dataset):
         ecg = zero_pad(csv_val[:,channel], length = 30000)
 
         # normalize and downsample
+        ecg = ecg[::10] #Down sampling to every 10th
         sx_norm = (ecg - np.mean(ecg)) / np.std(ecg)
-        sx_norm = sx_norm[::10]
-        sx_norm = pd.cut(sx_norm, 100, labels=False) 
+        sx_norm = pd.cut(sx_norm, 100, labels=False) # Bin the data into 100 bins
         
         sample = {'sx': sx_norm, 'label': self.labels.iloc[idx, 0]}
 
