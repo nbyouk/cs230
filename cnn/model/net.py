@@ -105,16 +105,16 @@ def confusion_matrix(outputs, labels):
     return m.confusion_matrix(labels, outputs, labels=[1., 0.])
 
 def true_positive(outputs, labels):
-    return confusion_matrix(outputs, labels)[0, 0]
+    return float(confusion_matrix(outputs, labels)[0, 0]) / len(labels.ravel())
 
 def false_negative(outputs, labels):
-    return confusion_matrix(outputs, labels)[0, 1]
+    return float(confusion_matrix(outputs, labels)[0, 1]) / len(labels.ravel())
 
 def false_positive(outputs, labels):
-    return confusion_matrix(outputs, labels)[1, 0]
+    return float(confusion_matrix(outputs, labels)[1, 0]) / len(labels.ravel())
 
 def true_negative(outputs, labels):
-    return confusion_matrix(outputs, labels)[1, 1]
+    return float(confusion_matrix(outputs, labels)[1, 1]) / len(labels.ravel())
 
 def accuracy(outputs, labels):
     """
