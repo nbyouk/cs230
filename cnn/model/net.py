@@ -1,4 +1,4 @@
-"""Defines the neural network, losss function and metrics"""
+"""Defines the neural network, loss function and metrics"""
 
 import numpy as np
 import torch
@@ -104,6 +104,18 @@ def confusion_matrix(outputs, labels):
     outputs = outputs.ravel()
     return m.confusion_matrix(labels, outputs, labels=[1., 0.])
 
+def true_positive(outputs, labels):
+    return confusion_matrix(outputs, labels)[0, 0]
+
+def false_negative(outputs, labels):
+    return confusion_matrix(outputs, labels)[0, 1]
+
+def false_positive(outputs, labels):
+    return confusion_matrix(outputs, labels)[1, 0]
+
+def true_negative(outputs, labels):
+    return confusion_matrix(outputs, labels)[1, 1]
+
 def accuracy(outputs, labels):
     """
     Compute the accuracy, given the outputs and labels.
@@ -172,6 +184,9 @@ metrics = {
     'accuracy': accuracy,
     'precision': precision,
     'recall': recall,
-    'f1': f1
-    # could add more metrics such as accuracy for each token type
+    'f1': f1,
+    'true_positive': true_positive,
+    'false_negative': false_negative,
+    'false_positive': false_positive,
+    'true_negative': true_negative
 }

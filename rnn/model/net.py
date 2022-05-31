@@ -30,9 +30,6 @@ class Net(nn.Module):
         """
         super(Net, self).__init__()
         
-        # downsampling
-        #self.downsample = nn.MaxPool1d(10)
-
         # embedding layer
         self.embedding = nn.Embedding(params.num_bins, params.embedding_dim)
 
@@ -74,6 +71,18 @@ def confusion_matrix(outputs, labels):
     labels = labels.ravel()
     outputs = outputs.ravel()
     return m.confusion_matrix(labels, outputs, labels=[1., 0.])
+
+def true_positive(outputs, labels):
+    return confusion_matrix(outputs, labels)[0, 0]
+
+def false_negative(outputs, labels):
+    return confusion_matrix(outputs, labels)[0, 1]
+
+def false_positive(outputs, labels):
+    return confusion_matrix(outputs, labels)[1, 0]
+
+def true_negative(outputs, labels):
+    return confusion_matrix(outputs, labels)[1, 1]
 
 def accuracy(outputs, labels):
     """
@@ -143,6 +152,10 @@ metrics = {
     'accuracy': accuracy,
     'precision': precision,
     'recall': recall,
-    'f1': f1
+    'f1': f1,
+    'true_positive': true_positive,
+    'false_negative': false_negative,
+    'false_positive': false_positive,
+    'true_negative': true_negative
     # could add more metrics such as accuracy for each token type
 }
