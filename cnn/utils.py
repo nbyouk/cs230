@@ -113,7 +113,7 @@ def save_dict_to_json(d, json_path):
 
 def save_checkpoint(state, is_best, checkpoint):
     """Saves model and training parameters at checkpoint + 'last.pth.tar'. If is_best==True, also saves
-    checkpoint + 'best.pth.tar'
+    checkpoint + 'best.pth.tar'af
 
     Args:
         state: (dict) contains model's state_dict, may contain other keys such as epoch, optimizer state_dict

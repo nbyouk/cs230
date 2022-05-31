@@ -4,6 +4,7 @@ import argparse
 import logging
 import os
 
+import pandas as pd
 import numpy as np
 import torch
 import utils
@@ -63,7 +64,7 @@ def evaluate(model, loss_fn, data_loader, metrics, params):
     metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]} 
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
-    return metrics_mean
+    return metrics_mean, pd.DataFrame(summ)
 
 
 if __name__ == '__main__':

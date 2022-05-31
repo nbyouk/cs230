@@ -3,12 +3,14 @@
 import argparse
 import logging
 import os
+from datetime import datetime
 
 import numpy as np
 import torch
 import torch.optim as optim
 from tqdm import tqdm
 
+import pandas as pd
 import utils
 import model.net as net
 from model.data_loader import PhysioNetDataset 
@@ -88,7 +90,7 @@ def train(model, optimizer, loss_fn, train_loader, metrics, params):
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v)
                                 for k, v in metrics_mean.items())
     logging.info("- Train metrics: " + metrics_string)
-    #could return the loss and accuracy of the training set here.
+    return pd.DataFrame(summ)
 
 
 def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics, params, model_dir, restore_file=None):
@@ -113,32 +115,29 @@ def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics,
         utils.load_checkpoint(restore_path, model, optimizer)
 
     best_val_acc = 0.0
-    train_loss, val_loss = [], []
-    train_acc, val_accuracy = [], []
-    epochs = []
+    df_train = pd.DataFrame()
+    df_eval = pd.DataFrame()
 
     for epoch in range(params.num_epochs):
         # Run one epoch
         logging.info("Epoch {}/{}".format(epoch + 1, params.num_epochs))
 
-        train(model, optimizer, loss_fn, train_loader, metrics, params)
+        train_metrics = train(model, optimizer, loss_fn, train_loader, metrics, params)
+        df_train = pd.concat([df_train, train_metrics], ignore_index=True)
 
         # Evaluate for one epoch on validation set
-        val_metrics = evaluate(model, loss_fn, val_loader, metrics, params)
+        val_metrics, val_pd = evaluate(model, loss_fn, val_loader, metrics, params)
+        df_eval = pd.concat([df_eval, val_pd], ignore_index=True)
 
         val_acc = val_metrics['accuracy']
         is_best = val_acc >= best_val_acc
-        # print(val_metrics)
 
-        val_loss.append(val_metrics['loss']) 
-        val_accuracy.append(val_acc) 
-        epochs.append(epoch)
-
+        #save the weights
         utils.save_checkpoint({'epoch': epoch + 1,
-            'state_dict': model.state_dict(),
-            'optim_dict': optimizer.state_dict()},
-                          is_best=is_best,
-                          checkpoint=model_dir)
+                               'state_dict': model.state_dict(),
+                               'optim_dict': optimizer.state_dict()},
+                              is_best=is_best,
+                              checkpoint=model_dir)
 
         # If best_eval, best_save_path
         if is_best:
@@ -154,7 +153,11 @@ def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics,
         last_json_path = os.path.join(
             model_dir, "metrics_val_last_weights.json")
         utils.save_dict_to_json(val_metrics, last_json_path)
-    utils.plot_loss_acc(epochs, val_loss, val_accuracy)
+
+    #Write the training and validation loss and accuracy data to a .csv
+    date = datetime.now().strftime("%Y_%m_%d-%I:%M:%S_%p")
+    df_train.to_csv(f"train_cnn_data_{date}.csv")
+    df_eval.to_csv(f"val_cnn_data_{date}.csv")
 
 
 if __name__ == '__main__':
