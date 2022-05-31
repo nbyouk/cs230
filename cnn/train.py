@@ -88,6 +88,7 @@ def train(model, optimizer, loss_fn, train_loader, metrics, params):
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v)
                                 for k, v in metrics_mean.items())
     logging.info("- Train metrics: " + metrics_string)
+    #could return the loss and accuracy of the training set here.
 
 
 def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics, params, model_dir, restore_file=None):
@@ -127,7 +128,7 @@ def train_and_evaluate(model, train_data, val_data, optimizer, loss_fn, metrics,
 
         val_acc = val_metrics['accuracy']
         is_best = val_acc >= best_val_acc
-        print(val_metrics)
+        # print(val_metrics)
 
         val_loss.append(val_metrics['loss']) 
         val_accuracy.append(val_acc) 
@@ -196,7 +197,7 @@ if __name__ == '__main__':
     optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # fetch loss function and metrics
-    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([1.0]))
+    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([3.0]))
     # loss_fn = torch.nn.BCEWithLogitsLoss()
     metrics = net.metrics
 

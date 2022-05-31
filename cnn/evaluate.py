@@ -101,7 +101,7 @@ if __name__ == '__main__':
     # Define the model
     model = net.Net(params).cuda() if params.cuda else net.Net(params)
     
-    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([1.0])) 
+    loss_fn = torch.nn.BCEWithLogitsLoss(pos_weight=torch.tensor([3.0])) 
     metrics = net.metrics
     
     logging.info("Starting evaluation")
