@@ -158,6 +158,12 @@ def spectrogram(data, fs=500, nperseg=64, noverlap=32):
     Sxx[mask] = np.log(Sxx[mask])
     return f, t, Sxx
 
+def zero_pad(data, length):
+    extended = np.zeros(length)
+    siglength = np.min([length, data.shape[0]])
+    extended[:siglength] = data[:siglength]
+    return extended
+
 def plot_loss_acc(epochs, loss, acc):
     """
     Args:
